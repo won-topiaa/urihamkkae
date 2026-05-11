@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>업체 랭킹 · 우리 함께해요!</title>
+<meta name="description" content="책임시공을 완수한 시공업체 랭킹 시스템" />
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet" />
+<style>
+  :root {
+    --orange: #F97316; --orange-deep: #EA580C; --orange-soft: #FED7AA; --orange-mist: #FFEDD5;
+    --cream: #FFF7ED; --cream-deep: #FFFBF5;
+    --green: #16A34A; --green-soft: #DCFCE7; --green-deep: #15803D;
+    --blue: #2563EB; --blue-soft: #DBEAFE;
+    --purple: #7C3AED; --purple-soft: #EDE9FE;
+    --red: #DC2626; --red-soft: #FEE2E2;
+    --yellow: #FCD34D; --yellow-deep: #D97706;
+    --ink: #1C1917; --body: #44403C; --muted: #78716C;
+    --line: #F5E6D3; --card: #FFFFFF;
+
+    /* Tier colors */
+    --t-diamond: linear-gradient(135deg, #67E8F9 0%, #06B6D4 50%, #0891B2 100%);
+    --t-platinum: linear-gradient(135deg, #E5E7EB 0%, #9CA3AF 50%, #6B7280 100%);
+    --t-gold: linear-gradient(135deg, #FDE68A 0%, #F59E0B 50%, #D97706 100%);
+    --t-silver: linear-gradient(135deg, #F3F4F6 0%, #9CA3AF 100%);
+    --t-bronze: linear-gradient(135deg, #FCD34D 0%, #B45309 100%);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Pretendard', system-ui, sans-serif;
+    background: var(--cream); color: var(--body); line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+  section { padding: 64px 0; }
+  @media (max-width: 768px) { section { padding: 48px 0; } }
+
+  /* Nav */
+  .nav { position: sticky; top: 0; z-index: 50; background: rgba(255, 247, 237, 0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; max-width: 1200px; margin: 0 auto; }
+  .logo { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 17px; color: var(--ink); }
+  .logo-mark { width: 30px; height: 30px; }
+  .nav-links { display: flex; gap: 22px; align-items: center; }
+  .nav-links a { color: var(--body); font-weight: 500; font-size: 14px; }
+  .nav-links a:hover { color: var(--orange-deep); }
+  .nav-links a.active { color: var(--orange-deep); font-weight: 700; }
+  .btn-primary { background: var(--orange); color: white !important; padding: 9px 18px; border-radius: 999px; font-weight: 700; font-size: 13px; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.25); }
+  .btn-primary:hover { background: var(--orange-deep); }
+  @media (max-width: 900px) {
+    .nav-links a:not(.btn-primary) { display: none; }
+  }
+
+  /* Hero */
+  .hero { padding: 56px 0 32px; position: relative; overflow: hidden; }
+  .hero-grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 48px; align-items: center; }
+  @media (max-width: 900px) { .hero-grid { grid-template-columns: 1fr; gap: 32px; } }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--orange-mist); color: var(--orange-deep);
+    padding: 6px 14px; border-radius: 999px;
+    font-size: 13px; font-weight: 700; margin-bottom: 16px;
+  }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); }
+  h1 {
+    font-size: clamp(32px, 4.5vw, 46px); line-height: 1.2;
+    color: var(--ink); font-weight: 800; letter-spacing: -0.02em;
+    margin-bottom: 16px;
+  }
+  h1 .gradient {
+    background: linear-gradient(135deg, var(--orange) 0%, #D97706 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero p.lead { font-size: 16px; color: var(--body); margin-bottom: 24px; max-width: 520px; }
+  .hero-pillars { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+  .pillar-pill {
+    background: white; border: 1px solid var(--line);
+    padding: 8px 14px; border-radius: 999px; font-size: 12px; font-weight: 600;
+    color: var(--body); display: inline-flex; align-items: center; gap: 6px;
+  }
+  .pillar-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+  /* Champion card */
+  .champion-card {
+    background: linear-gradient(135deg, #1F2937 0%, #111827 100%);
+    border-radius: 24px; padding: 28px;
+    color: white; position: relative; overflow: hidden;
+    box-shadow: 0 24px 60px rgba(28, 25, 23, 0.15);
+  }
+  .champion-card::before {
+    content: '';
+    position: absolute; top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    background: var(--t-gold); opacity: 0.3;
+    border-radius: 50%; filter: blur(40px);
+  }
+  .champion-label { font-size: 12px; color: #FDE68A; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+  .champion-label::before { content: '👑'; font-size: 14px; }
+  .champion-name-row { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+  .champion-avatar {
+    width: 56px; height: 56px; border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 22px; color: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+  .champion-name { font-size: 22px; font-weight: 800; margin-bottom: 2px; }
+  .champion-spec { font-size: 12px; color: #9CA3AF; }
+  .champion-score-block { display: flex; align-items: end; gap: 16px; padding: 20px 0; border-top: 1px solid #374151; border-bottom: 1px solid #374151; }
+  .champion-score { font-size: 56px; font-weight: 800; line-height: 1; background: var(--t-gold); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .champion-score-sub { font-size: 12px; color: #9CA3AF; padding-bottom: 8px; }
+  .champion-tier { display: inline-flex; padding: 4px 12px; border-radius: 999px; background: var(--t-gold); color: #78350F; font-size: 11px; font-weight: 800; margin-top: 6px; }
+  .champion-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }
+  .champion-metric { font-size: 11px; color: #9CA3AF; }
+  .champion-metric strong { display: block; color: white; font-size: 16px; font-weight: 800; margin-top: 2px; }
+
+  /* Stats bar */
+  .ranking-stats {
+    background: white; padding: 24px; border-radius: 20px;
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    margin: 24px 0 0; border: 1px solid var(--line);
+  }
+  @media (max-width: 700px) { .ranking-stats { grid-template-columns: repeat(2, 1fr); gap: 16px; } }
+  .rs-item { text-align: center; padding: 8px; position: relative; }
+  .rs-item:not(:last-child)::after { content: ''; position: absolute; right: 0; top: 15%; bottom: 15%; width: 1px; background: var(--line); }
+  @media (max-width: 700px) { .rs-item::after { display: none !important; } }
+  .rs-num { font-size: 26px; font-weight: 800; color: var(--orange-deep); line-height: 1; }
+  .rs-label { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+  /* Podium */
+  .podium-section { background: white; }
+  .section-head { text-align: center; max-width: 720px; margin: 0 auto 48px; }
+  h2 { font-size: clamp(24px, 3vw, 34px); line-height: 1.3; color: var(--ink); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 12px; }
+  .section-head p { font-size: 15px; color: var(--muted); }
+
+  .podium {
+    display: grid; grid-template-columns: 1fr 1.1fr 1fr;
+    gap: 16px; max-width: 880px; margin: 0 auto;
+    align-items: end;
+  }
+  @media (max-width: 700px) { .podium { grid-template-columns: 1fr; align-items: stretch; } }
+  .podium-spot {
+    background: white; border-radius: 20px; padding: 28px 20px;
+    text-align: center; border: 1px solid var(--line);
+    position: relative; transition: transform .2s;
+  }
+  .podium-spot:hover { transform: translateY(-4px); }
+  .podium-medal {
+    width: 56px; height: 56px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: -52px auto 14px;
+    font-size: 28px; box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    border: 4px solid white;
+  }
+  .medal-1 { background: var(--t-gold); }
+  .medal-2 { background: var(--t-platinum); }
+  .medal-3 { background: var(--t-bronze); }
+  .podium-rank {
+    font-size: 12px; color: var(--muted); font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .podium-name { font-size: 18px; font-weight: 800; color: var(--ink); margin-bottom: 4px; }
+  .podium-spec { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+  .podium-score { font-size: 36px; font-weight: 800; color: var(--orange-deep); line-height: 1; }
+  .podium-score-unit { font-size: 14px; color: var(--muted); font-weight: 600; }
+  .podium-trend { margin-top: 12px; font-size: 12px; font-weight: 700; }
+  .trend-up { color: var(--green); }
+  .trend-down { color: var(--red); }
+  .trend-stable { color: var(--muted); }
+
+  /* Highlighted middle */
+  .podium-spot.first {
+    padding-top: 38px; padding-bottom: 36px;
+    background: linear-gradient(180deg, #FFFBEB 0%, white 60%);
+    border: 2px solid #F59E0B;
+    box-shadow: 0 20px 40px rgba(217, 119, 6, 0.15);
+  }
+
+  /* Filter */
+  .filter-section { padding: 32px 0 16px; background: white; }
+  .filter-row {
+    display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between;
+    align-items: center;
+  }
+  .filter-group { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .filter-group .group-label { font-size: 12px; color: var(--muted); font-weight: 600; margin-right: 4px; }
+  .filter-chip {
+    background: white; border: 1px solid var(--line); padding: 7px 14px;
+    border-radius: 999px; font-size: 13px; font-weight: 600;
+    color: var(--body); cursor: pointer; transition: all .15s;
+  }
+  .filter-chip:hover { border-color: var(--orange); }
+  .filter-chip.active { background: var(--ink); color: white; border-color: var(--ink); }
+
+  /* Leaderboard */
+  .board-section { background: white; padding-top: 16px; }
+  .board {
+    background: white; border-radius: 20px; border: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .board-row {
+    display: grid; grid-template-columns: 60px 1.4fr 120px 1fr 100px 100px;
+    align-items: center; padding: 16px 20px;
+    border-bottom: 1px solid var(--line);
+    transition: background .15s;
+  }
+  .board-row:last-child { border-bottom: none; }
+  .board-row:hover { background: var(--cream); }
+  .board-row.header { background: var(--cream); font-size: 12px; color: var(--muted); font-weight: 700; padding: 14px 20px; }
+  @media (max-width: 800px) {
+    .board-row { grid-template-columns: 50px 1fr 90px 80px; padding: 14px 16px; }
+    .board-row .col-trend, .board-row .col-projects { display: none; }
+  }
+  .col-rank { font-weight: 800; color: var(--ink); font-size: 16px; }
+  .col-rank .rank-1 { color: #D97706; }
+  .col-rank .rank-2 { color: #6B7280; }
+  .col-rank .rank-3 { color: #B45309; }
+  .col-name { display: flex; align-items: center; gap: 12px; }
+  .col-name-avatar {
+    width: 38px; height: 38px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 800; font-size: 14px;
+    flex-shrink: 0;
+  }
+  .col-name-text { font-weight: 700; color: var(--ink); font-size: 14px; line-height: 1.3; }
+  .col-name-spec { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .col-tier { display: inline-flex; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 800; align-items: center; gap: 4px; }
+  .tier-diamond { background: #ECFEFF; color: #0E7490; }
+  .tier-platinum { background: #F3F4F6; color: #374151; }
+  .tier-gold { background: #FEF3C7; color: #92400E; }
+  .tier-silver { background: #F9FAFB; color: #6B7280; }
+  .tier-bronze { background: #FED7AA; color: #9A3412; }
+  .col-score-wrap { display: flex; flex-direction: column; gap: 4px; }
+  .col-score-num { font-size: 16px; font-weight: 800; color: var(--ink); }
+  .col-score-bar { width: 100%; height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
+  .col-score-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--orange), var(--orange-deep)); }
+  .col-projects { font-size: 13px; color: var(--body); }
+  .col-trend { font-size: 12px; font-weight: 700; }
+
+  /* Methodology */
+  .method-section { background: var(--cream); }
+  .method-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 1100px; margin: 0 auto; }
+  @media (max-width: 900px) { .method-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 500px) { .method-grid { grid-template-columns: 1fr; } }
+  .method-card {
+    background: white; padding: 24px; border-radius: 18px;
+    border: 1px solid var(--line); position: relative;
+  }
+  .method-weight {
+    position: absolute; top: 24px; right: 24px;
+    background: var(--orange-mist); color: var(--orange-deep);
+    padding: 4px 12px; border-radius: 999px;
+    font-size: 12px; font-weight: 800;
+  }
+  .method-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 14px; }
+  .m-rating { background: var(--orange-mist); }
+  .m-defect { background: var(--green-soft); }
+  .m-time { background: var(--blue-soft); }
+  .m-response { background: var(--purple-soft); }
+  .m-safety { background: var(--red-soft); }
+  .m-eco { background: #D1FAE5; }
+  .method-card h3 { font-size: 16px; color: var(--ink); margin-bottom: 6px; font-weight: 800; }
+  .method-card p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .method-formula {
+    margin-top: 12px; padding: 10px 12px; background: var(--cream);
+    border-radius: 8px; font-size: 12px; color: var(--body); font-family: ui-monospace, 'Courier New', monospace;
+  }
+
+  /* Badges showcase */
+  .badge-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; max-width: 1000px; margin: 0 auto; }
+  @media (max-width: 800px) { .badge-grid { grid-template-columns: repeat(2, 1fr); } }
+  .achievement {
+    background: white; padding: 20px; border-radius: 16px;
+    border: 1px solid var(--line); text-align: center;
+    transition: transform .2s;
+  }
+  .achievement:hover { transform: translateY(-3px); }
+  .ach-icon {
+    width: 56px; height: 56px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; margin: 0 auto 12px;
+  }
+  .ach-1 { background: linear-gradient(135deg, #FEF3C7, #F59E0B); }
+  .ach-2 { background: linear-gradient(135deg, #D1FAE5, #10B981); }
+  .ach-3 { background: linear-gradient(135deg, #DBEAFE, #2563EB); }
+  .ach-4 { background: linear-gradient(135deg, #FEE2E2, #DC2626); }
+  .ach-5 { background: linear-gradient(135deg, #EDE9FE, #7C3AED); }
+  .ach-6 { background: linear-gradient(135deg, #FED7AA, #EA580C); }
+  .ach-7 { background: linear-gradient(135deg, #ECFEFF, #06B6D4); }
+  .ach-8 { background: linear-gradient(135deg, #F3F4F6, #6B7280); }
+  .ach-name { font-size: 13px; font-weight: 800; color: var(--ink); margin-bottom: 4px; }
+  .ach-desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
+  .ach-count { font-size: 10px; color: var(--orange-deep); font-weight: 700; margin-top: 6px; }
+
+  /* Why ranking */
+  .why-section { padding: 64px 0; }
+  .why-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 800px) { .why-grid { grid-template-columns: 1fr; } }
+  .why-card {
+    background: white; padding: 32px; border-radius: 20px;
+    border: 1px solid var(--line);
+  }
+  .why-card.contractor { background: linear-gradient(135deg, #FFFBF5 0%, #FFEDD5 100%); border-color: var(--orange-soft); }
+  .why-card.complex { background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%); border-color: #BBF7D0; }
+  .why-tag { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 800; margin-bottom: 14px; }
+  .why-tag.c { background: var(--orange); color: white; }
+  .why-tag.h { background: var(--green); color: white; }
+  .why-card h3 { font-size: 20px; color: var(--ink); margin-bottom: 12px; font-weight: 800; }
+  .why-list { list-style: none; }
+  .why-list li { padding: 8px 0; padding-left: 28px; font-size: 14px; color: var(--body); position: relative; line-height: 1.6; }
+  .why-list li::before {
+    content: '✓'; position: absolute; left: 0; top: 8px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--green); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800;
+  }
+
+  /* CTA */
+  .cta-section {
+    background: linear-gradient(135deg, var(--orange) 0%, var(--orange-deep) 100%);
+    text-align: center; color: white;
+  }
+  .cta-section h2 { color: white; margin-bottom: 10px; }
+  .cta-section p { color: rgba(255,255,255,0.92); font-size: 16px; margin-bottom: 28px; }
+  .cta-section .btn-primary { background: white; color: var(--orange-deep) !important; padding: 14px 28px; font-size: 15px; }
+
+  /* Footer */
+  footer { background: var(--ink); color: #A8A29E; padding: 40px 0 28px; }
+  .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 36px; }
+  @media (max-width: 700px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
+  .footer-brand { color: white; font-weight: 800; font-size: 17px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .footer-grid h4 { color: white; font-size: 14px; margin-bottom: 14px; font-weight: 700; }
+  .footer-grid ul { list-style: none; }
+  .footer-grid ul li { margin-bottom: 8px; }
+  .footer-grid a { font-size: 14px; color: #A8A29E; }
+  .footer-grid a:hover { color: white; }
+  .footer-bottom { border-top: 1px solid #44403C; margin-top: 32px; padding-top: 22px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 14px; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="logo-mark" viewBox="0 0 32 32">
+      <rect x="3" y="10" width="10" height="18" rx="1.5" fill="#F97316"/>
+      <rect x="19" y="6" width="10" height="22" rx="1.5" fill="#EA580C"/>
+      <rect x="6" y="14" width="2" height="2" fill="#FFF7ED"/>
+      <rect x="6" y="18" width="2" height="2" fill="#FFF7ED"/>
+      <rect x="6" y="22" width="2" height="2" fill="#FFF7ED"/>
+      <rect x="22" y="10" width="2" height="2" fill="#FFF7ED"/>
+      <rect x="22" y="14" width="2" height="2" fill="#FFF7ED"/>
+      <rect x="22" y="18" width="2" height="2" fill="#FFF7ED"/>
+      <rect x="22" y="22" width="2" height="2" fill="#FFF7ED"/>
+      <path d="M13 17 Q16 14 19 17" stroke="#16A34A" stroke-width="2" fill="none" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">
+      <svg class="logo-mark"><use href="#logo-mark"/></svg>
+      우리 함께해요!
+    </a>
+    <div class="nav-links">
+      <a href="index.html#how">작동 방식</a>
+      <a href="match.html">단지 매칭</a>
+      <a href="calculator.html">절감 계산기</a>
+      <a href="contractors.html">시공업체</a>
+      <a href="rankings.html" class="active">업체 랭킹</a>
+      <a href="index.html#cta" class="btn-primary">신청</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<header class="hero">
+  <div class="container">
+    <div class="hero-grid">
+      <div>
+        <span class="badge"><span class="badge-dot"></span>업체 평가 시스템 · 2026 Q1</span>
+        <h1>책임시공은 <span class="gradient">점수</span>가 됩니다.</h1>
+        <p class="lead">
+          매 분기 시공 결과·하자율·응답속도·안전사고·친환경성을 종합 평가해 점수를 매깁니다. 잘 한 업체가 더 많은 일감을 받는 구조, 그게 입주민에게도 가장 이득이거든요.
+        </p>
+        <div class="hero-pillars">
+          <span class="pillar-pill"><span class="pillar-dot" style="background:var(--orange)"></span>입대의 평점</span>
+          <span class="pillar-pill"><span class="pillar-dot" style="background:var(--green)"></span>하자율</span>
+          <span class="pillar-pill"><span class="pillar-dot" style="background:var(--blue)"></span>공기 준수</span>
+          <span class="pillar-pill"><span class="pillar-dot" style="background:var(--purple)"></span>AS 응답</span>
+          <span class="pillar-pill"><span class="pillar-dot" style="background:var(--red)"></span>안전</span>
+          <span class="pillar-pill"><span class="pillar-dot" style="background:#10B981"></span>친환경</span>
+        </div>
+      </div>
+
+      <div class="champion-card">
+        <div class="champion-label">이달의 책임시공 1위</div>
+        <div class="champion-name-row">
+          <div class="champion-avatar" style="background:#F97316">한</div>
+          <div>
+            <div class="champion-name">한솔건설</div>
+            <div class="champion-spec">외벽도색 · 부천 본사</div>
+          </div>
+        </div>
+        <div class="champion-score-block">
+          <div>
+            <div class="champion-score">947</div>
+            <div class="champion-tier">💎 다이아몬드</div>
+          </div>
+          <div class="champion-score-sub">
+            상위 1.2%<br/>
+            <span style="color:#86EFAC; font-weight: 700;">▲ 22점 (전분기 대비)</span>
+          </div>
+        </div>
+        <div class="champion-metrics">
+          <div class="champion-metric">하자율<strong>0.8%</strong></div>
+          <div class="champion-metric">공기 준수<strong>98%</strong></div>
+          <div class="champion-metric">AS 응답<strong>4.5h</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ranking-stats">
+      <div class="rs-item"><div class="rs-num">142</div><div class="rs-label">평가 대상 업체</div></div>
+      <div class="rs-item"><div class="rs-num">2,847</div><div class="rs-label">완료 시공 건수</div></div>
+      <div class="rs-item"><div class="rs-num">4.7<span style="font-size:18px">/5</span></div><div class="rs-label">평균 만족도</div></div>
+      <div class="rs-item"><div class="rs-num">매주</div><div class="rs-label">실시간 업데이트</div></div>
+    </div>
+  </div>
+</header>
+
+<!-- Podium -->
+<section class="podium-section">
+  <div class="container">
+    <div class="section-head">
+      <span class="badge"><span class="badge-dot"></span>2026년 1분기 TOP 3</span>
+      <h2>가장 신뢰받는 시공업체</h2>
+      <p>지난 90일간 완수한 책임시공을 종합 평가한 결과입니다.</p>
+    </div>
+    <div class="podium">
+      <div class="podium-spot">
+        <div class="podium-medal medal-2">🥈</div>
+        <div class="podium-rank">2위 · 플래티넘</div>
+        <div class="podium-name">명진종합건설</div>
+        <div class="podium-spec">종합 보수공사 · 203건</div>
+        <div><span class="podium-score">912</span><span class="podium-score-unit">/1000</span></div>
+        <div class="podium-trend trend-stable">— 유지</div>
+      </div>
+      <div class="podium-spot first">
+        <div class="podium-medal medal-1">🥇</div>
+        <div class="podium-rank">1위 · 다이아몬드</div>
+        <div class="podium-name">한솔건설</div>
+        <div class="podium-spec">외벽도색 전문 · 132건</div>
+        <div><span class="podium-score">947</span><span class="podium-score-unit">/1000</span></div>
+        <div class="podium-trend trend-up">▲ 22점 상승</div>
+      </div>
+      <div class="podium-spot">
+        <div class="podium-medal medal-3">🥉</div>
+        <div class="podium-rank">3위 · 플래티넘</div>
+        <div class="podium-name">우리엘리베이터</div>
+        <div class="podium-spec">엘리베이터 교체 · 87건</div>
+        <div><span class="podium-score">898</span><span class="podium-score-unit">/1000</span></div>
+        <div class="podium-trend trend-up">▲ 1단계 상승</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Filters + Leaderboard -->
+<section class="filter-section">
+  <div class="container">
+    <div class="filter-row">
+      <div class="filter-group">
+        <span class="group-label">기간</span>
+        <button class="filter-chip" data-period="m">월간</button>
+        <button class="filter-chip active" data-period="q">분기</button>
+        <button class="filter-chip" data-period="y">연간</button>
+      </div>
+      <div class="filter-group">
+        <span class="group-label">전문 분야</span>
+        <button class="filter-chip active" data-spec="all">전체</button>
+        <button class="filter-chip" data-spec="paint">외벽도색</button>
+        <button class="filter-chip" data-spec="elevator">엘리베이터</button>
+        <button class="filter-chip" data-spec="waterproof">옥상방수</button>
+        <button class="filter-chip" data-spec="parking">주차장</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="board-section">
+  <div class="container">
+    <div class="board" id="board">
+      <div class="board-row header">
+        <div>순위</div>
+        <div>업체명</div>
+        <div>등급</div>
+        <div>책임시공 점수</div>
+        <div class="col-projects">시공 건수</div>
+        <div class="col-trend">변동</div>
+      </div>
+      <!-- rows injected -->
+    </div>
+  </div>
+</section>
+
+<!-- Methodology -->
+<section class="method-section">
+  <div class="container">
+    <div class="section-head">
+      <span class="badge"><span class="badge-dot"></span>평가 방식</span>
+      <h2>6개 지표로 1,000점 만점 평가</h2>
+      <p>입대의·플랫폼·외부 감리 데이터를 종합해 매주 자동 갱신됩니다.</p>
+    </div>
+    <div class="method-grid">
+      <div class="method-card">
+        <div class="method-weight">20%</div>
+        <div class="method-icon m-rating">⭐</div>
+        <h3>입대의 평점</h3>
+        <p>시공 후 입주자대표회의가 매기는 종합 만족도 점수.</p>
+        <div class="method-formula">점수 = 평점(5점만점) × 40</div>
+      </div>
+      <div class="method-card">
+        <div class="method-weight">20%</div>
+        <div class="method-icon m-defect">🔧</div>
+        <h3>하자율</h3>
+        <p>준공 후 1년 내 발견된 하자 건수를 시공 단위로 환산.</p>
+        <div class="method-formula">점수 = max(0, 200 − 하자율 × 40)</div>
+      </div>
+      <div class="method-card">
+        <div class="method-weight">20%</div>
+        <div class="method-icon m-safety">🛡️</div>
+        <h3>안전사고</h3>
+        <p>시공 중 발생한 안전사고·인명사고 이력.</p>
+        <div class="method-formula">점수 = 200 − 사고건수 × 50</div>
+      </div>
+      <div class="method-card">
+        <div class="method-weight">15%</div>
+        <div class="method-icon m-time">📅</div>
+        <h3>공기 준수율</h3>
+        <p>계약상 공사 기간을 지킨 비율.</p>
+        <div class="method-formula">점수 = 준수율(%) × 1.5</div>
+      </div>
+      <div class="method-card">
+        <div class="method-weight">15%</div>
+        <div class="method-icon m-response">⚡</div>
+        <h3>AS 응답시간</h3>
+        <p>준공 후 하자보수 요청에 대한 평균 응답시간.</p>
+        <div class="method-formula">점수 = max(0, 150 − 시간 × 6)</div>
+      </div>
+      <div class="method-card">
+        <div class="method-weight">10%</div>
+        <div class="method-icon m-eco">🌱</div>
+        <h3>친환경성</h3>
+        <p>저VOC 자재·재활용 자재·폐기물 처리 적정성 평가.</p>
+        <div class="method-formula">점수 = 친환경 비율(%)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Achievements -->
+<section>
+  <div class="container">
+    <div class="section-head">
+      <span class="badge"><span class="badge-dot"></span>업체 성취 배지</span>
+      <h2>꾸준함과 우수성을 인정합니다</h2>
+      <p>특별한 기록을 달성한 업체에게는 영구 배지가 부여됩니다.</p>
+    </div>
+    <div class="badge-grid">
+      <div class="achievement">
+        <div class="ach-icon ach-1">👑</div>
+        <div class="ach-name">분기 1위</div>
+        <div class="ach-desc">분야별 분기 1위 달성</div>
+        <div class="ach-count">현재 4개 업체 보유</div>
+      </div>
+      <div class="achievement">
+        <div class="ach-icon ach-2">🌿</div>
+        <div class="ach-name">무사고 100건</div>
+        <div class="ach-desc">안전사고 0건 100시공 달성</div>
+        <div class="ach-count">현재 8개 업체 보유</div>
+      </div>
+      <div class="achievement">
+        <div class="ach-icon ach-3">⚡</div>
+        <div class="ach-name">가장 빠른 응답</div>
+        <div class="ach-desc">AS 평균 4시간 이하</div>
+        <div class="ach-count">현재 6개 업체 보유</div>
+      </div>
+      <div class="achievement">
+        <div class="ach-icon ach-4">💎</div>
+        <div class="ach-name">하자율 1% 미만</div>
+        <div class="ach-desc">연간 하자율 1% 이하 유지</div>
+        <div class="ach-count">현재 5개 업체 보유</div>
+      </div>
+      <div class="achievement">
+        <div class="ach-icon ach-5">🎯</div>
+        <div class="ach-name">공기 100%</div>
+        <div class="ach-desc">최근 50건 공기 전수 준수</div>
+        <div class="ach-count">현재 11개 업체 보유</div>
+      </div>
+      <div class="achievement">
+        <div class="ach-icon ach-6">🏗️</div>
+        <div class="ach-name">베테랑</div>
+        <div class="ach-desc">플랫폼 누적 200건 이상</div>
+        <div class="ach-count">현재 3개 업체 보유</div>
+      </div>
+      <div class="achievement">
+        <div class="ach-icon ach-7">🌱</div>
+        <div class="ach-name">친환경 우수</div>
+        <div class="ach-desc">친환경 자재 사용률 90%+</div>
+        <div class="ach-count">현재 9개 업체 보유</div>
+      </div>
+      <div class="achievement">
+        <div class="ach-icon ach-8">📈</div>
+        <div class="ach-name">급성장 업체</div>
+        <div class="ach-desc">전분기 대비 50점+ 상승</div>
+        <div class="ach-count">이번 분기 7개 업체</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Why ranking matters -->
+<section class="why-section">
+  <div class="container">
+    <div class="section-head">
+      <span class="badge"><span class="badge-dot"></span>랭킹이 만드는 변화</span>
+      <h2>왜 모두에게 이득인가요?</h2>
+    </div>
+    <div class="why-grid">
+      <div class="why-card contractor">
+        <span class="why-tag c">시공업체</span>
+        <h3>일감이 늘고, 단가가 올라갑니다</h3>
+        <ul class="why-list">
+          <li>다이아몬드·플래티넘 업체는 매칭 알림 우선 발송 (월 평균 +40% 노출)</li>
+          <li>입대의가 등급순으로 업체를 선택 → 영업 없이도 수주</li>
+          <li>높은 등급은 견적 단가 협상력 +15~20% 향상</li>
+          <li>특별 배지는 영구 보유, 이력서 역할</li>
+        </ul>
+      </div>
+      <div class="why-card complex">
+        <span class="why-tag h">입대의 / 입주민</span>
+        <h3>믿을 수 있는 업체를 한눈에 고릅니다</h3>
+        <ul class="why-list">
+          <li>지인 추천·과거 비리·후기 위조 걱정 없는 객관적 데이터</li>
+          <li>하자율·AS 응답시간이 가시화 → 사후 분쟁 사전 차단</li>
+          <li>외벽도색·엘리베이터 등 분야별 최고 업체를 즉시 확인</li>
+          <li>잘하는 업체를 선택할수록 단지 자산가치도 함께 올라갑니다</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="container">
+    <h2>잘하는 업체가 보이는 시장을 만듭니다</h2>
+    <p>플랫폼에 등록하고 다음 분기 랭킹에 도전해보세요.</p>
+    <a href="contractors.html#register" class="btn-primary">시공업체 등록하기 →</a>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand">
+          <svg class="logo-mark" style="width:28px;height:28px"><use href="#logo-mark"/></svg>
+          우리 함께해요!
+        </div>
+        <p style="font-size:14px; line-height:1.6; max-width:320px;">
+          소규모 공동주택을 위한 공동 보수공사 매칭 플랫폼.<br/>
+          잘 한 업체가 보이는 시장.
+        </p>
+      </div>
+      <div>
+        <h4>입주민 / 입대의</h4>
+        <ul>
+          <li><a href="index.html#how">작동 방식</a></li>
+          <li><a href="match.html">단지 매칭</a></li>
+          <li><a href="calculator.html">절감 계산기</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>시공업체</h4>
+        <ul>
+          <li><a href="contractors.html#register">업체 등록</a></li>
+          <li><a href="contractors.html#directory">등록 업체</a></li>
+          <li><a href="rankings.html">업체 랭킹</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>문의</h4>
+        <ul>
+          <li><a href="mailto:hello@urihamkkae.kr">hello@urihamkkae.kr</a></li>
+          <li><a href="#">1644-0000</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 우리 함께해요!. All rights reserved.</span>
+      <span>모두의 창업 출품작 · 부천시 공동주택 매칭 플랫폼</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+const TIER_META = {
+  diamond:  { name: "다이아몬드", icon: "💎", cls: "tier-diamond" },
+  platinum: { name: "플래티넘",   icon: "🏆", cls: "tier-platinum" },
+  gold:     { name: "골드",       icon: "🥇", cls: "tier-gold" },
+  silver:   { name: "실버",       icon: "🥈", cls: "tier-silver" },
+  bronze:   { name: "브론즈",     icon: "🥉", cls: "tier-bronze" }
+};
+
+const SPEC_LABEL = {
+  paint: "외벽도색", elevator: "엘리베이터", waterproof: "옥상방수",
+  parking: "주차장보수", landscape: "조경"
+};
+
+const CONTRACTORS = [
+  { rank: 1,  name: "한솔건설",          initial: "한", color: "#F97316", spec: "paint",       score: 947, tier: "diamond",  projects: 132, trend: { d: 'up', v: 22 } },
+  { rank: 2,  name: "명진종합건설",      initial: "명", color: "#EA580C", spec: "paint",       score: 912, tier: "platinum", projects: 203, trend: { d: 'stable' } },
+  { rank: 3,  name: "우리엘리베이터",    initial: "우", color: "#2563EB", spec: "elevator",    score: 898, tier: "platinum", projects: 87,  trend: { d: 'up', v: 14 } },
+  { rank: 4,  name: "다온테크",          initial: "다", color: "#16A34A", spec: "waterproof",  score: 871, tier: "platinum", projects: 156, trend: { d: 'down', v: 6 } },
+  { rank: 5,  name: "케이콘크리트",      initial: "케", color: "#DC2626", spec: "waterproof",  score: 854, tier: "platinum", projects: 142, trend: { d: 'up', v: 9 } },
+  { rank: 6,  name: "그린엔지니어링",    initial: "그", color: "#16A34A", spec: "parking",     score: 832, tier: "platinum", projects: 64,  trend: { d: 'up', v: 18 } },
+  { rank: 7,  name: "솔로몬건설",        initial: "솔", color: "#0EA5E9", spec: "elevator",    score: 798, tier: "gold",     projects: 75,  trend: { d: 'stable' } },
+  { rank: 8,  name: "새빛건설",          initial: "새", color: "#7C3AED", spec: "paint",       score: 776, tier: "gold",     projects: 98,  trend: { d: 'up', v: 4 } },
+  { rank: 9,  name: "현대수직기연",      initial: "현", color: "#1D4ED8", spec: "elevator",    score: 758, tier: "gold",     projects: 112, trend: { d: 'down', v: 11 } },
+  { rank: 10, name: "그린루프",          initial: "그", color: "#10B981", spec: "waterproof",  score: 742, tier: "gold",     projects: 89,  trend: { d: 'up', v: 7 } },
+  { rank: 11, name: "동방건설산업",      initial: "동", color: "#B45309", spec: "paint",       score: 728, tier: "gold",     projects: 167, trend: { d: 'stable' } },
+  { rank: 12, name: "파크원종합",        initial: "파", color: "#7C3AED", spec: "parking",     score: 706, tier: "gold",     projects: 54,  trend: { d: 'up', v: 12 } },
+  { rank: 13, name: "씨에스도장",        initial: "씨", color: "#F59E0B", spec: "paint",       score: 689, tier: "silver",   projects: 76,  trend: { d: 'down', v: 3 } },
+  { rank: 14, name: "두레엘리베이터",    initial: "두", color: "#3B82F6", spec: "elevator",    score: 672, tier: "silver",   projects: 58,  trend: { d: 'up', v: 6 } },
+  { rank: 15, name: "탄탄콘크리트",      initial: "탄", color: "#EF4444", spec: "waterproof",  score: 654, tier: "silver",   projects: 91,  trend: { d: 'stable' } },
+  { rank: 16, name: "더원건설",          initial: "더", color: "#EA580C", spec: "paint",       score: 638, tier: "silver",   projects: 43,  trend: { d: 'up', v: 28 } },
+  { rank: 17, name: "에스앤피주차",      initial: "에", color: "#8B5CF6", spec: "parking",     score: 622, tier: "silver",   projects: 37,  trend: { d: 'down', v: 8 } },
+  { rank: 18, name: "산뜻건설",          initial: "산", color: "#F97316", spec: "paint",       score: 608, tier: "silver",   projects: 52,  trend: { d: 'up', v: 5 } },
+  { rank: 19, name: "광동도색",          initial: "광", color: "#FB923C", spec: "paint",       score: 587, tier: "bronze",   projects: 34,  trend: { d: 'stable' } },
+  { rank: 20, name: "한빛엔지니어링",    initial: "한", color: "#2563EB", spec: "elevator",    score: 564, tier: "bronze",   projects: 29,  trend: { d: 'down', v: 14 } }
+];
+
+let currentSpec = "all";
+
+function renderBoard() {
+  const board = document.getElementById('board');
+  const header = board.querySelector('.board-row.header');
+  // remove old rows
+  board.querySelectorAll('.board-row:not(.header)').forEach(r => r.remove());
+
+  const filtered = currentSpec === "all"
+    ? CONTRACTORS
+    : CONTRACTORS.filter(c => c.spec === currentSpec);
+
+  // re-rank
+  const ranked = filtered.map((c, i) => ({ ...c, displayRank: i + 1 }));
+
+  ranked.forEach(c => {
+    const tier = TIER_META[c.tier];
+    const trendHtml =
+      c.trend.d === 'up'     ? `<span class="trend-up">▲ ${c.trend.v}</span>` :
+      c.trend.d === 'down'   ? `<span class="trend-down">▼ ${c.trend.v}</span>` :
+                                `<span class="trend-stable">—</span>`;
+
+    const rankCls = c.displayRank === 1 ? 'rank-1' : c.displayRank === 2 ? 'rank-2' : c.displayRank === 3 ? 'rank-3' : '';
+
+    const row = document.createElement('div');
+    row.className = 'board-row';
+    row.innerHTML = `
+      <div class="col-rank ${rankCls}">${c.displayRank}</div>
+      <div class="col-name">
+        <div class="col-name-avatar" style="background:${c.color}">${c.initial}</div>
+        <div>
+          <div class="col-name-text">${c.name}</div>
+          <div class="col-name-spec">${SPEC_LABEL[c.spec]}</div>
+        </div>
+      </div>
+      <div><span class="col-tier ${tier.cls}">${tier.icon} ${tier.name}</span></div>
+      <div class="col-score-wrap">
+        <span class="col-score-num">${c.score}<span style="color:var(--muted); font-size:11px; font-weight:600">/1000</span></span>
+        <span class="col-score-bar"><span class="col-score-fill" style="width:${c.score/10}%"></span></span>
+      </div>
+      <div class="col-projects">${c.projects}건</div>
+      <div class="col-trend">${trendHtml}</div>
+    `;
+    board.appendChild(row);
+  });
+}
+
+document.querySelectorAll('.filter-chip[data-spec]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-chip[data-spec]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentSpec = btn.dataset.spec;
+    renderBoard();
+  });
+});
+
+document.querySelectorAll('.filter-chip[data-period]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-chip[data-period]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    // Period switching is purely cosmetic in demo
+  });
+});
+
+renderBoard();
+</script>
+
+</body>
+</html>

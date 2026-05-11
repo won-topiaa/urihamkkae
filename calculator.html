@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>비용 절감 계산기 · 우리 함께해요!</title>
+<meta name="description" content="공동 발주 시 예상 절감액을 즉시 계산해보세요" />
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet" />
+<style>
+  :root {
+    --orange: #F97316; --orange-deep: #EA580C; --orange-soft: #FED7AA; --orange-mist: #FFEDD5;
+    --cream: #FFF7ED; --green: #16A34A; --green-soft: #DCFCE7; --green-deep: #15803D;
+    --ink: #1C1917; --body: #44403C; --muted: #78716C;
+    --line: #F5E6D3; --card: #FFFFFF;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Pretendard', system-ui, sans-serif;
+    background: var(--cream); color: var(--body); line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+
+  /* Nav */
+  .nav { position: sticky; top: 0; z-index: 50; background: rgba(255, 247, 237, 0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; max-width: 1200px; margin: 0 auto; }
+  .logo { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 17px; color: var(--ink); }
+  .logo-mark { width: 30px; height: 30px; }
+  .nav-links { display: flex; gap: 24px; align-items: center; }
+  .nav-links a { color: var(--body); font-weight: 500; font-size: 14px; }
+  .nav-links a:hover { color: var(--orange-deep); }
+  .nav-links a.active { color: var(--orange-deep); font-weight: 700; }
+  .btn-primary { background: var(--orange); color: white !important; padding: 9px 18px; border-radius: 999px; font-weight: 700; font-size: 13px; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.25); }
+  .btn-primary:hover { background: var(--orange-deep); }
+  @media (max-width: 768px) {
+    .nav-links a:not(.btn-primary) { display: none; }
+  }
+
+  /* Page */
+  .page { max-width: 1200px; margin: 0 auto; padding: 48px 24px 80px; }
+  .page-head { text-align: center; max-width: 720px; margin: 0 auto 48px; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--orange-mist); color: var(--orange-deep);
+    padding: 6px 14px; border-radius: 999px;
+    font-size: 13px; font-weight: 700; margin-bottom: 16px;
+  }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); }
+  h1 { font-size: clamp(28px, 4vw, 40px); line-height: 1.2; color: var(--ink); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 12px; }
+  .page-head p { font-size: 16px; color: var(--muted); }
+
+  /* Calculator */
+  .calc-grid { display: grid; grid-template-columns: 1fr 1.3fr; gap: 24px; }
+  @media (max-width: 900px) { .calc-grid { grid-template-columns: 1fr; } }
+
+  .calc-panel {
+    background: white; border-radius: 24px; padding: 32px;
+    border: 1px solid var(--line);
+  }
+  .panel-title { font-size: 18px; color: var(--ink); font-weight: 800; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; }
+  .panel-title-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--orange-mist); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+
+  /* Form */
+  .field { margin-bottom: 24px; }
+  .field-label { font-size: 14px; color: var(--ink); font-weight: 700; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+  .field-help { font-size: 12px; color: var(--muted); font-weight: 500; }
+
+  /* Work type buttons */
+  .work-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .work-btn {
+    background: white; border: 1.5px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; cursor: pointer; transition: all .15s;
+    text-align: left; font-family: inherit;
+  }
+  .work-btn:hover { border-color: var(--orange-soft); }
+  .work-btn.active { background: var(--orange-mist); border-color: var(--orange); }
+  .work-btn-icon { font-size: 22px; margin-bottom: 6px; }
+  .work-btn-name { font-size: 14px; font-weight: 700; color: var(--ink); }
+  .work-btn-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* Number input */
+  .num-input {
+    width: 100%; padding: 14px 16px; border: 1.5px solid var(--line);
+    border-radius: 12px; font-size: 16px; font-family: inherit; font-weight: 600;
+    color: var(--ink); background: white; transition: border-color .15s;
+  }
+  .num-input:focus { outline: none; border-color: var(--orange); }
+
+  /* Slider */
+  .slider-wrap { position: relative; padding: 8px 0 24px; }
+  .slider {
+    width: 100%; -webkit-appearance: none; appearance: none;
+    height: 6px; background: var(--line); border-radius: 999px; outline: none;
+  }
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--orange); cursor: pointer;
+    border: 3px solid white; box-shadow: 0 2px 8px rgba(249, 115, 22, 0.4);
+  }
+  .slider::-moz-range-thumb {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--orange); cursor: pointer;
+    border: 3px solid white; box-shadow: 0 2px 8px rgba(249, 115, 22, 0.4);
+  }
+  .slider-labels { display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px; color: var(--muted); }
+  .slider-value { font-size: 22px; font-weight: 800; color: var(--orange-deep); }
+
+  /* Result panel */
+  .result-hero {
+    background: linear-gradient(135deg, var(--orange) 0%, var(--orange-deep) 100%);
+    border-radius: 20px; padding: 28px; color: white; margin-bottom: 20px;
+  }
+  .result-hero-label { font-size: 13px; opacity: 0.9; margin-bottom: 8px; font-weight: 600; }
+  .result-hero-value { font-size: 44px; font-weight: 800; line-height: 1; letter-spacing: -0.02em; }
+  .result-hero-unit { font-size: 20px; font-weight: 700; margin-left: 4px; }
+  .result-hero-sub { font-size: 14px; margin-top: 12px; opacity: 0.95; }
+  .result-hero-sub strong { font-weight: 800; }
+
+  .compare-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .compare-card {
+    padding: 20px; border-radius: 16px; border: 1px solid var(--line); background: var(--cream);
+  }
+  .compare-card.win { background: var(--green-soft); border-color: var(--green); }
+  .compare-label { font-size: 13px; color: var(--muted); margin-bottom: 6px; font-weight: 600; }
+  .compare-card.win .compare-label { color: var(--green-deep); }
+  .compare-value { font-size: 26px; font-weight: 800; color: var(--ink); line-height: 1; }
+  .compare-card.win .compare-value { color: var(--green-deep); }
+  .compare-sub { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+  /* Bar chart */
+  .chart-wrap { padding: 16px 0; }
+  .chart-title { font-size: 14px; color: var(--ink); font-weight: 700; margin-bottom: 14px; }
+  .bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .bar-label { width: 90px; font-size: 13px; color: var(--body); font-weight: 600; }
+  .bar-track { flex: 1; height: 28px; background: var(--cream); border-radius: 8px; overflow: hidden; position: relative; }
+  .bar-fill {
+    height: 100%; border-radius: 8px;
+    display: flex; align-items: center; justify-content: flex-end;
+    padding-right: 12px; color: white; font-size: 13px; font-weight: 700;
+    transition: width .6s cubic-bezier(.2,.8,.2,1);
+  }
+  .bar-solo { background: linear-gradient(90deg, #FCA5A5, #EF4444); }
+  .bar-joint { background: linear-gradient(90deg, var(--orange), var(--orange-deep)); }
+
+  /* Breakdown */
+  .breakdown { padding: 20px; background: var(--cream); border-radius: 14px; margin-top: 16px; }
+  .breakdown-row {
+    display: flex; justify-content: space-between; padding: 8px 0;
+    border-bottom: 1px dashed var(--line); font-size: 14px;
+  }
+  .breakdown-row:last-child { border-bottom: none; padding-top: 12px; font-weight: 800; color: var(--ink); }
+  .breakdown-label { color: var(--body); }
+  .breakdown-value { color: var(--ink); font-weight: 600; }
+  .breakdown-value.discount { color: var(--green-deep); }
+
+  /* CTA */
+  .calc-cta { margin-top: 24px; text-align: center; }
+  .calc-cta button {
+    background: var(--orange); color: white; padding: 14px 32px;
+    border-radius: 999px; border: none; font-weight: 800; font-size: 15px;
+    cursor: pointer; box-shadow: 0 8px 20px rgba(249, 115, 22, 0.3);
+    transition: all .2s; font-family: inherit;
+  }
+  .calc-cta button:hover { background: var(--orange-deep); transform: translateY(-2px); }
+  .calc-cta-note { font-size: 12px; color: var(--muted); margin-top: 10px; }
+
+  /* Notes */
+  .notes {
+    max-width: 1200px; margin: 32px auto 0; padding: 0 24px;
+    font-size: 12px; color: var(--muted); text-align: center; line-height: 1.7;
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="logo-mark" viewBox="0 0 32 32">
+      <rect x="3" y="10" width="10" height="18" rx="1.5" fill="#F97316"/>
+      <rect x="19" y="6" width="10" height="22" rx="1.5" fill="#EA580C"/>
+      <rect x="6" y="14" width="2" height="2" fill="#FFF7ED"/>
+      <rect x="6" y="18" width="2" height="2" fill="#FFF7ED"/>
+      <rect x="6" y="22" width="2" height="2" fill="#FFF7ED"/>
+      <rect x="22" y="10" width="2" height="2" fill="#FFF7ED"/>
+      <rect x="22" y="14" width="2" height="2" fill="#FFF7ED"/>
+      <rect x="22" y="18" width="2" height="2" fill="#FFF7ED"/>
+      <rect x="22" y="22" width="2" height="2" fill="#FFF7ED"/>
+      <path d="M13 17 Q16 14 19 17" stroke="#16A34A" stroke-width="2" fill="none" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">
+      <svg class="logo-mark"><use href="#logo-mark"/></svg>
+      우리 함께해요!
+    </a>
+    <div class="nav-links">
+      <a href="index.html#how">작동 방식</a>
+      <a href="match.html">단지 매칭</a>
+      <a href="calculator.html" class="active">절감 계산기</a>
+      <a href="contractors.html">시공업체</a>
+      <a href="rankings.html">업체 랭킹</a>
+      <a href="index.html#cta" class="btn-primary">신청</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-head">
+    <span class="badge"><span class="badge-dot"></span>비용 절감 계산기</span>
+    <h1>우리 단지, 얼마나 아낄 수 있을까?</h1>
+    <p>세대수와 공사 종류, 함께할 단지 수만 입력하면 절감액을 바로 확인할 수 있어요.</p>
+  </div>
+
+  <div class="calc-grid">
+    <!-- Input -->
+    <div class="calc-panel">
+      <div class="panel-title">
+        <div class="panel-title-icon">⚙️</div>
+        우리 단지 정보
+      </div>
+
+      <div class="field">
+        <div class="field-label">공사 종류</div>
+        <div class="work-grid">
+          <button class="work-btn active" data-work="paint">
+            <div class="work-btn-icon">🎨</div>
+            <div class="work-btn-name">외벽도색</div>
+            <div class="work-btn-meta">15년 주기</div>
+          </button>
+          <button class="work-btn" data-work="elevator">
+            <div class="work-btn-icon">🛗</div>
+            <div class="work-btn-name">엘리베이터 교체</div>
+            <div class="work-btn-meta">20~25년 주기</div>
+          </button>
+          <button class="work-btn" data-work="waterproof">
+            <div class="work-btn-icon">💧</div>
+            <div class="work-btn-name">옥상방수</div>
+            <div class="work-btn-meta">10~15년 주기</div>
+          </button>
+          <button class="work-btn" data-work="parking">
+            <div class="work-btn-icon">🅿️</div>
+            <div class="work-btn-name">주차장 보수</div>
+            <div class="work-btn-meta">12~15년 주기</div>
+          </button>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">
+          세대 수
+          <span class="field-help">우리 단지</span>
+        </div>
+        <input type="number" id="units" class="num-input" value="150" min="30" max="500" />
+      </div>
+
+      <div class="field">
+        <div class="field-label">
+          함께할 단지 수
+          <span class="slider-value"><span id="partner-display">2</span>곳</span>
+        </div>
+        <div class="slider-wrap">
+          <input type="range" id="partners" class="slider" min="0" max="5" value="2" />
+          <div class="slider-labels">
+            <span>혼자</span>
+            <span>+1</span>
+            <span>+2</span>
+            <span>+3</span>
+            <span>+4</span>
+            <span>+5</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">
+          참여 단지 평균 세대 수
+          <span class="field-help">이웃 단지</span>
+        </div>
+        <input type="number" id="partner-units" class="num-input" value="150" min="30" max="500" />
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div class="calc-panel">
+      <div class="panel-title">
+        <div class="panel-title-icon">📊</div>
+        예상 절감 결과
+      </div>
+
+      <div class="result-hero">
+        <div class="result-hero-label">우리 단지 예상 절감액</div>
+        <div>
+          <span class="result-hero-value" id="savings">0</span><span class="result-hero-unit">만원</span>
+        </div>
+        <div class="result-hero-sub">
+          공동 발주로 <strong id="rate">0%</strong> 비용 감소 · 세대당 <strong id="per-unit">0</strong>만원 절약
+        </div>
+      </div>
+
+      <div class="compare-row">
+        <div class="compare-card">
+          <div class="compare-label">단독 발주 시</div>
+          <div class="compare-value"><span id="solo-cost">0</span>만원</div>
+          <div class="compare-sub">우리 단지만 진행</div>
+        </div>
+        <div class="compare-card win">
+          <div class="compare-label">공동 발주 시</div>
+          <div class="compare-value"><span id="joint-cost">0</span>만원</div>
+          <div class="compare-sub" id="joint-sub">3개 단지 함께</div>
+        </div>
+      </div>
+
+      <div class="chart-wrap">
+        <div class="chart-title">비용 비교</div>
+        <div class="bar-row">
+          <div class="bar-label">단독</div>
+          <div class="bar-track">
+            <div class="bar-fill bar-solo" id="bar-solo" style="width: 0%">0만원</div>
+          </div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">공동</div>
+          <div class="bar-track">
+            <div class="bar-fill bar-joint" id="bar-joint" style="width: 0%">0만원</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="breakdown">
+        <div class="breakdown-row">
+          <span class="breakdown-label">기본 시공비</span>
+          <span class="breakdown-value" id="bk-base">-</span>
+        </div>
+        <div class="breakdown-row">
+          <span class="breakdown-label">자재 대량 발주 할인</span>
+          <span class="breakdown-value discount" id="bk-material">-</span>
+        </div>
+        <div class="breakdown-row">
+          <span class="breakdown-label">출장·셋업비 분산</span>
+          <span class="breakdown-value discount" id="bk-setup">-</span>
+        </div>
+        <div class="breakdown-row">
+          <span class="breakdown-label">감리비 공유</span>
+          <span class="breakdown-value discount" id="bk-supervision">-</span>
+        </div>
+        <div class="breakdown-row">
+          <span class="breakdown-label">최종 비용</span>
+          <span class="breakdown-value" id="bk-final">-</span>
+        </div>
+      </div>
+
+      <div class="calc-cta">
+        <button onclick="alert('데모입니다. 실서비스 출시 후 매칭을 요청할 수 있습니다.')">이 조건으로 매칭 요청 →</button>
+        <div class="calc-cta-note">매칭은 무료입니다. 계약 성사 시에도 단지에 부담 없음.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes">
+    ※ 위 계산은 부천시 원미구 평균 시공 단가를 기준으로 산정한 예상값입니다. 실제 견적은 단지 규모·외벽 면적·자재 등급에 따라 달라질 수 있습니다.
+  </div>
+</div>
+
+<script>
+// Unit cost per household (만원)
+const COST_BASE = {
+  paint:      { base: 48, label: "외벽도색" },
+  elevator:   { base: 85, label: "엘리베이터 교체" },
+  waterproof: { base: 22, label: "옥상방수" },
+  parking:    { base: 35, label: "주차장 보수" }
+};
+
+// Fixed setup cost (만원) — independent of unit count
+const FIXED_SETUP = {
+  paint:      1800,
+  elevator:   2400,
+  waterproof: 900,
+  parking:    1400
+};
+
+// Material bulk discount rate per added partner
+const BULK_RATE = 0.04; // 4% per extra group (caps at 5 partners = 20%)
+
+let work = "paint";
+
+function calc() {
+  const units = Math.max(30, parseInt(document.getElementById('units').value) || 0);
+  const partners = parseInt(document.getElementById('partners').value);
+  const partnerUnits = Math.max(30, parseInt(document.getElementById('partner-units').value) || 0);
+
+  const cfg = COST_BASE[work];
+  const setup = FIXED_SETUP[work];
+
+  // Solo cost = base * units + fixed setup
+  const solo = Math.round(cfg.base * units + setup);
+
+  // Joint cost (per our complex)
+  // 1. Material bulk discount (4% per partner, max 20%)
+  const bulkDisc = Math.min(0.20, BULK_RATE * partners);
+  // 2. Setup cost split across (1 + partners)
+  const totalParticipants = 1 + partners;
+  const ourSetupShare = setup / totalParticipants;
+  // 3. Supervision/legal cost shared (~5% of base * units, saves half when joint)
+  const supervisionSolo = Math.round(cfg.base * units * 0.05);
+  const supervisionJoint = supervisionSolo / totalParticipants;
+
+  const baseAfterDisc = cfg.base * units * (1 - bulkDisc);
+  const joint = Math.round(baseAfterDisc + ourSetupShare + supervisionJoint);
+
+  const savings = solo - joint;
+  const rate = solo > 0 ? Math.round((savings / solo) * 100) : 0;
+  const perUnit = units > 0 ? Math.round(savings / units * 10) / 10 : 0;
+
+  // Render hero
+  document.getElementById('savings').textContent = savings.toLocaleString();
+  document.getElementById('rate').textContent = rate + '%';
+  document.getElementById('per-unit').textContent = perUnit;
+
+  // Render compare
+  document.getElementById('solo-cost').textContent = solo.toLocaleString();
+  document.getElementById('joint-cost').textContent = joint.toLocaleString();
+  document.getElementById('joint-sub').textContent = totalParticipants + '개 단지 함께';
+
+  // Render bars
+  const maxC = Math.max(solo, joint);
+  document.getElementById('bar-solo').style.width = (solo / maxC * 100) + '%';
+  document.getElementById('bar-solo').textContent = solo.toLocaleString() + '만원';
+  document.getElementById('bar-joint').style.width = (joint / maxC * 100) + '%';
+  document.getElementById('bar-joint').textContent = joint.toLocaleString() + '만원';
+
+  // Render breakdown
+  const base = cfg.base * units;
+  const matDisc = Math.round(base * bulkDisc);
+  const setupSaved = Math.round(setup - ourSetupShare);
+  const supSaved = Math.round(supervisionSolo - supervisionJoint);
+
+  document.getElementById('bk-base').textContent = Math.round(base).toLocaleString() + '만원';
+  document.getElementById('bk-material').textContent = partners === 0 ? '-' : '−' + matDisc.toLocaleString() + '만원';
+  document.getElementById('bk-setup').textContent = partners === 0 ? '-' : '−' + setupSaved.toLocaleString() + '만원';
+  document.getElementById('bk-supervision').textContent = partners === 0 ? '-' : '−' + supSaved.toLocaleString() + '만원';
+  document.getElementById('bk-final').textContent = joint.toLocaleString() + '만원';
+
+  document.getElementById('partner-display').textContent = partners;
+}
+
+document.querySelectorAll('.work-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.work-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    work = btn.dataset.work;
+    calc();
+  });
+});
+
+document.getElementById('units').addEventListener('input', calc);
+document.getElementById('partner-units').addEventListener('input', calc);
+document.getElementById('partners').addEventListener('input', calc);
+
+calc();
+</script>
+
+</body>
+</html>

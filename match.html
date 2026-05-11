@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>단지 매칭 · 우리 함께해요!</title>
+<meta name="description" content="부천시 원미구 인근 아파트 단지 공동 보수공사 매칭 지도" />
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  :root {
+    --orange: #F97316; --orange-deep: #EA580C; --orange-soft: #FED7AA; --orange-mist: #FFEDD5;
+    --cream: #FFF7ED; --green: #16A34A; --green-soft: #DCFCE7;
+    --blue: #2563EB; --blue-soft: #DBEAFE;
+    --purple: #7C3AED; --purple-soft: #EDE9FE;
+    --ink: #1C1917; --body: #44403C; --muted: #78716C;
+    --line: #F5E6D3; --card: #FFFFFF;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Pretendard', system-ui, sans-serif;
+    background: var(--cream); color: var(--body); line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+
+  /* Nav */
+  .nav { position: sticky; top: 0; z-index: 1000; background: rgba(255, 247, 237, 0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; max-width: 1400px; margin: 0 auto; }
+  .logo { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 17px; color: var(--ink); }
+  .logo-mark { width: 30px; height: 30px; }
+  .nav-links { display: flex; gap: 24px; align-items: center; }
+  .nav-links a { color: var(--body); font-weight: 500; font-size: 14px; }
+  .nav-links a:hover { color: var(--orange-deep); }
+  .nav-links a.active { color: var(--orange-deep); font-weight: 700; }
+  .btn-primary { background: var(--orange); color: white !important; padding: 9px 18px; border-radius: 999px; font-weight: 700; font-size: 13px; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.25); }
+  .btn-primary:hover { background: var(--orange-deep); }
+
+  /* Page header */
+  .page-head { padding: 32px 24px 20px; max-width: 1400px; margin: 0 auto; }
+  .page-head h1 { font-size: 28px; color: var(--ink); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 6px; }
+  .page-head p { color: var(--muted); font-size: 15px; }
+
+  /* Filters */
+  .filter-bar {
+    max-width: 1400px; margin: 0 auto; padding: 0 24px 16px;
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  }
+  .filter-chip {
+    background: white; border: 1px solid var(--line); padding: 8px 14px;
+    border-radius: 999px; font-size: 13px; font-weight: 600;
+    color: var(--body); cursor: pointer; transition: all .15s; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .filter-chip:hover { border-color: var(--orange); }
+  .filter-chip.active { background: var(--ink); color: white; border-color: var(--ink); }
+  .filter-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .filter-label { font-size: 12px; color: var(--muted); margin-right: 4px; font-weight: 600; }
+
+  /* Main grid */
+  .main { max-width: 1400px; margin: 0 auto; padding: 0 24px 40px; display: grid; grid-template-columns: 380px 1fr; gap: 20px; height: calc(100vh - 220px); min-height: 600px; }
+  @media (max-width: 900px) { .main { grid-template-columns: 1fr; height: auto; } }
+
+  /* Sidebar */
+  .sidebar {
+    background: white; border-radius: 20px; border: 1px solid var(--line);
+    overflow: hidden; display: flex; flex-direction: column;
+  }
+  .sidebar-head {
+    padding: 16px 20px; border-bottom: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .sidebar-head h2 { font-size: 15px; color: var(--ink); font-weight: 800; }
+  .count-badge { background: var(--orange-mist); color: var(--orange-deep); padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+  .complex-list { overflow-y: auto; flex: 1; }
+  .complex-list::-webkit-scrollbar { width: 6px; }
+  .complex-list::-webkit-scrollbar-thumb { background: var(--orange-soft); border-radius: 3px; }
+  .complex-card {
+    padding: 16px 20px; border-bottom: 1px solid var(--line);
+    cursor: pointer; transition: background .15s;
+  }
+  .complex-card:hover { background: var(--cream); }
+  .complex-card.active { background: var(--orange-mist); border-left: 3px solid var(--orange); padding-left: 17px; }
+  .complex-name { font-weight: 700; color: var(--ink); font-size: 15px; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .complex-tag { font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 700; white-space: nowrap; }
+  .complex-meta { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  .complex-info { display: flex; gap: 12px; font-size: 12px; color: var(--body); }
+  .complex-info span { display: inline-flex; align-items: center; gap: 4px; }
+
+  /* Map */
+  .map-wrap { background: white; border-radius: 20px; border: 1px solid var(--line); overflow: hidden; position: relative; }
+  #map { width: 100%; height: 100%; min-height: 500px; }
+  .map-legend {
+    position: absolute; bottom: 16px; left: 16px; z-index: 500;
+    background: white; padding: 12px 16px; border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08); border: 1px solid var(--line);
+    font-size: 12px;
+  }
+  .legend-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .legend-row:last-child { margin-bottom: 0; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 1px rgba(0,0,0,0.1); }
+
+  /* Custom marker */
+  .marker-pin {
+    width: 24px; height: 24px; border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  }
+  .marker-active { width: 32px; height: 32px; }
+
+  /* Popup */
+  .leaflet-popup-content-wrapper { border-radius: 14px; padding: 4px; }
+  .leaflet-popup-content { margin: 12px 14px; font-family: 'Pretendard', sans-serif; }
+  .popup-name { font-weight: 800; color: var(--ink); font-size: 14px; margin-bottom: 4px; }
+  .popup-meta { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  .popup-info { font-size: 12px; color: var(--body); margin-bottom: 10px; line-height: 1.5; }
+  .popup-btn { background: var(--orange); color: white; padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; border: none; cursor: pointer; width: 100%; }
+  .popup-btn:hover { background: var(--orange-deep); }
+
+  /* Match summary */
+  .match-banner {
+    background: linear-gradient(135deg, var(--orange) 0%, var(--orange-deep) 100%);
+    color: white; padding: 14px 20px; border-radius: 16px;
+    margin: 0 24px 16px; max-width: 1352px;
+    display: flex; justify-content: space-between; align-items: center;
+    margin-left: auto; margin-right: auto;
+    flex-wrap: wrap; gap: 12px;
+  }
+  .match-banner-text { font-size: 14px; font-weight: 600; }
+  .match-banner-text strong { font-weight: 800; }
+  .match-banner button {
+    background: white; color: var(--orange-deep); border: none;
+    padding: 8px 16px; border-radius: 999px; font-weight: 700; font-size: 13px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="logo-mark" viewBox="0 0 32 32">
+      <rect x="3" y="10" width="10" height="18" rx="1.5" fill="#F97316"/>
+      <rect x="19" y="6" width="10" height="22" rx="1.5" fill="#EA580C"/>
+      <rect x="6" y="14" width="2" height="2" fill="#FFF7ED"/>
+      <rect x="6" y="18" width="2" height="2" fill="#FFF7ED"/>
+      <rect x="6" y="22" width="2" height="2" fill="#FFF7ED"/>
+      <rect x="22" y="10" width="2" height="2" fill="#FFF7ED"/>
+      <rect x="22" y="14" width="2" height="2" fill="#FFF7ED"/>
+      <rect x="22" y="18" width="2" height="2" fill="#FFF7ED"/>
+      <rect x="22" y="22" width="2" height="2" fill="#FFF7ED"/>
+      <path d="M13 17 Q16 14 19 17" stroke="#16A34A" stroke-width="2" fill="none" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">
+      <svg class="logo-mark"><use href="#logo-mark"/></svg>
+      우리 함께해요!
+    </a>
+    <div class="nav-links">
+      <a href="index.html#how">작동 방식</a>
+      <a href="match.html" class="active">단지 매칭</a>
+      <a href="calculator.html">절감 계산기</a>
+      <a href="contractors.html">시공업체</a>
+      <a href="rankings.html">업체 랭킹</a>
+      <a href="index.html#cta" class="btn-primary">신청</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-head">
+  <h1>인근 단지 매칭 지도</h1>
+  <p>부천시 원미구 · 함께 공동 발주할 단지를 찾아보세요</p>
+</div>
+
+<div class="filter-bar">
+  <span class="filter-label">공사 종류</span>
+  <button class="filter-chip active" data-filter="all">전체</button>
+  <button class="filter-chip" data-filter="paint">
+    <span class="filter-dot" style="background:#F97316"></span>외벽도색
+  </button>
+  <button class="filter-chip" data-filter="elevator">
+    <span class="filter-dot" style="background:#2563EB"></span>엘리베이터
+  </button>
+  <button class="filter-chip" data-filter="waterproof">
+    <span class="filter-dot" style="background:#16A34A"></span>옥상방수
+  </button>
+  <button class="filter-chip" data-filter="parking">
+    <span class="filter-dot" style="background:#7C3AED"></span>주차장보수
+  </button>
+</div>
+
+<div class="match-banner">
+  <div class="match-banner-text">
+    🎯 현재 <strong id="match-count">28개</strong> 단지가 매칭 대기 중 · 평균 절감률 <strong>32%</strong>
+  </div>
+  <button onclick="alert('데모 페이지입니다. 실서비스 출시 후 등록을 받습니다.')">우리 단지 등록 →</button>
+</div>
+
+<div class="main">
+  <aside class="sidebar">
+    <div class="sidebar-head">
+      <h2>매칭 대기 단지</h2>
+      <span class="count-badge" id="list-count">28곳</span>
+    </div>
+    <div class="complex-list" id="complex-list"></div>
+  </aside>
+
+  <div class="map-wrap">
+    <div id="map"></div>
+    <div class="map-legend">
+      <div class="legend-row"><span class="legend-dot" style="background:#F97316"></span>외벽도색</div>
+      <div class="legend-row"><span class="legend-dot" style="background:#2563EB"></span>엘리베이터</div>
+      <div class="legend-row"><span class="legend-dot" style="background:#16A34A"></span>옥상방수</div>
+      <div class="legend-row"><span class="legend-dot" style="background:#7C3AED"></span>주차장보수</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const COMPLEXES = [
+  { name: "푸른마을1단지", dong: "중동", lat: 37.5045, lng: 126.7625, units: 180, type: "paint", date: "2026.08", fund: 8200 },
+  { name: "햇살아파트", dong: "중동", lat: 37.5063, lng: 126.7648, units: 146, type: "paint", date: "2026.08", fund: 6400 },
+  { name: "한울타리아파트", dong: "중동", lat: 37.5028, lng: 126.7672, units: 132, type: "paint", date: "2026.09", fund: 5800 },
+  { name: "솔바람타운", dong: "상동", lat: 37.5089, lng: 126.7544, units: 198, type: "elevator", date: "2026.10", fund: 12300 },
+  { name: "초록빛아파트", dong: "상동", lat: 37.5104, lng: 126.7561, units: 156, type: "elevator", date: "2026.11", fund: 9800 },
+  { name: "별빛마을2단지", dong: "상동", lat: 37.5072, lng: 126.7589, units: 224, type: "paint", date: "2026.09", fund: 11200 },
+  { name: "산들바람아파트", dong: "약대동", lat: 37.4988, lng: 126.7708, units: 168, type: "waterproof", date: "2026.07", fund: 4200 },
+  { name: "달빛타운", dong: "약대동", lat: 37.4972, lng: 126.7731, units: 142, type: "waterproof", date: "2026.07", fund: 3800 },
+  { name: "은하수마을", dong: "약대동", lat: 37.5001, lng: 126.7752, units: 188, type: "waterproof", date: "2026.08", fund: 5100 },
+  { name: "소망아파트", dong: "심곡동", lat: 37.4936, lng: 126.7820, units: 116, type: "paint", date: "2026.10", fund: 4900 },
+  { name: "사랑마을1차", dong: "심곡동", lat: 37.4953, lng: 126.7798, units: 158, type: "elevator", date: "2026.12", fund: 8700 },
+  { name: "행복타운", dong: "심곡동", lat: 37.4918, lng: 126.7841, units: 134, type: "paint", date: "2026.10", fund: 5400 },
+  { name: "봄날아파트", dong: "원미동", lat: 37.4882, lng: 126.7768, units: 172, type: "parking", date: "2026.09", fund: 6800 },
+  { name: "가을빛타운", dong: "원미동", lat: 37.4863, lng: 126.7791, units: 198, type: "parking", date: "2026.10", fund: 7500 },
+  { name: "여름향기아파트", dong: "원미동", lat: 37.4905, lng: 126.7752, units: 124, type: "paint", date: "2026.11", fund: 4600 },
+  { name: "들꽃마을", dong: "춘의동", lat: 37.5128, lng: 126.7728, units: 162, type: "waterproof", date: "2026.08", fund: 5800 },
+  { name: "이슬아파트", dong: "춘의동", lat: 37.5145, lng: 126.7745, units: 144, type: "elevator", date: "2026.11", fund: 10200 },
+  { name: "안개마을2단지", dong: "춘의동", lat: 37.5112, lng: 126.7762, units: 186, type: "paint", date: "2026.09", fund: 7100 },
+  { name: "단풍빌리지", dong: "도당동", lat: 37.5168, lng: 126.7672, units: 138, type: "paint", date: "2026.09", fund: 5500 },
+  { name: "백합아파트", dong: "도당동", lat: 37.5183, lng: 126.7691, units: 196, type: "elevator", date: "2026.10", fund: 11600 },
+  { name: "장미타운", dong: "도당동", lat: 37.5151, lng: 126.7714, units: 168, type: "waterproof", date: "2026.07", fund: 4800 },
+  { name: "수국마을", dong: "중동", lat: 37.5018, lng: 126.7611, units: 152, type: "parking", date: "2026.10", fund: 6200 },
+  { name: "코스모스아파트", dong: "상동", lat: 37.5095, lng: 126.7521, units: 178, type: "paint", date: "2026.08", fund: 7400 },
+  { name: "민들레빌리지", dong: "약대동", lat: 37.4965, lng: 126.7689, units: 124, type: "parking", date: "2026.11", fund: 4900 },
+  { name: "라일락마을", dong: "심곡동", lat: 37.4974, lng: 126.7775, units: 188, type: "waterproof", date: "2026.08", fund: 6400 },
+  { name: "튤립아파트", dong: "원미동", lat: 37.4848, lng: 126.7733, units: 142, type: "elevator", date: "2026.12", fund: 9100 },
+  { name: "벚꽃마을1차", dong: "춘의동", lat: 37.5135, lng: 126.7705, units: 168, type: "paint", date: "2026.09", fund: 6700 },
+  { name: "목련타운", dong: "도당동", lat: 37.5165, lng: 126.7732, units: 154, type: "paint", date: "2026.10", fund: 6100 }
+];
+
+const TYPE_META = {
+  paint: { color: "#F97316", label: "외벽도색" },
+  elevator: { color: "#2563EB", label: "엘리베이터" },
+  waterproof: { color: "#16A34A", label: "옥상방수" },
+  parking: { color: "#7C3AED", label: "주차장보수" }
+};
+
+const TYPE_BG = {
+  paint: { bg: "#FFEDD5", color: "#EA580C" },
+  elevator: { bg: "#DBEAFE", color: "#1D4ED8" },
+  waterproof: { bg: "#DCFCE7", color: "#15803D" },
+  parking: { bg: "#EDE9FE", color: "#6D28D9" }
+};
+
+// Initialize map
+const map = L.map('map', { zoomControl: true }).setView([37.5040, 126.7700], 14);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; OpenStreetMap &copy; CARTO',
+  subdomains: 'abcd', maxZoom: 19
+}).addTo(map);
+
+let markers = [];
+let currentFilter = "all";
+let activeIdx = null;
+
+function makeIcon(type, active = false) {
+  const color = TYPE_META[type].color;
+  const size = active ? 32 : 24;
+  return L.divIcon({
+    className: '',
+    html: `<div class="marker-pin ${active ? 'marker-active' : ''}" style="background:${color}"></div>`,
+    iconSize: [size, size],
+    iconAnchor: [size/2, size]
+  });
+}
+
+function popupHtml(c, idx) {
+  const t = TYPE_META[c.type];
+  return `
+    <div class="popup-name">${c.name}</div>
+    <div class="popup-meta">${c.dong} · ${c.units}세대</div>
+    <div class="popup-info">
+      <strong style="color:${t.color}">${t.label}</strong> 희망 · ${c.date}<br/>
+      충당금 잔액: ${c.fund.toLocaleString()}만원
+    </div>
+    <button class="popup-btn" onclick="alert('데모입니다. 함께하기 신청은 실서비스에서 가능합니다.')">함께하기 신청 →</button>
+  `;
+}
+
+function renderMarkers() {
+  markers.forEach(m => map.removeLayer(m));
+  markers = [];
+  const filtered = COMPLEXES.filter(c => currentFilter === "all" || c.type === currentFilter);
+  filtered.forEach((c, i) => {
+    const idx = COMPLEXES.indexOf(c);
+    const marker = L.marker([c.lat, c.lng], { icon: makeIcon(c.type, idx === activeIdx) })
+      .addTo(map)
+      .bindPopup(popupHtml(c, idx))
+      .on('click', () => selectComplex(idx));
+    markers.push(marker);
+  });
+}
+
+function renderList() {
+  const list = document.getElementById('complex-list');
+  const filtered = COMPLEXES.filter(c => currentFilter === "all" || c.type === currentFilter);
+  document.getElementById('list-count').textContent = filtered.length + '곳';
+  document.getElementById('match-count').textContent = filtered.length + '개';
+  list.innerHTML = filtered.map(c => {
+    const idx = COMPLEXES.indexOf(c);
+    const t = TYPE_META[c.type];
+    const tg = TYPE_BG[c.type];
+    return `
+      <div class="complex-card ${idx === activeIdx ? 'active' : ''}" data-idx="${idx}">
+        <div class="complex-name">
+          ${c.name}
+          <span class="complex-tag" style="background:${tg.bg}; color:${tg.color}">${t.label}</span>
+        </div>
+        <div class="complex-meta">${c.dong} · ${c.units}세대 · ${c.date} 예정</div>
+        <div class="complex-info">
+          <span>💰 충당금 ${c.fund.toLocaleString()}만원</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  list.querySelectorAll('.complex-card').forEach(el => {
+    el.addEventListener('click', () => {
+      const idx = parseInt(el.dataset.idx);
+      selectComplex(idx);
+    });
+  });
+}
+
+function selectComplex(idx) {
+  activeIdx = idx;
+  const c = COMPLEXES[idx];
+  map.flyTo([c.lat, c.lng], 16, { duration: 0.6 });
+  renderMarkers();
+  renderList();
+  setTimeout(() => {
+    const m = markers.find(mk => {
+      const ll = mk.getLatLng();
+      return Math.abs(ll.lat - c.lat) < 0.0001 && Math.abs(ll.lng - c.lng) < 0.0001;
+    });
+    if (m) m.openPopup();
+  }, 300);
+}
+
+document.querySelectorAll('.filter-chip').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    activeIdx = null;
+    renderMarkers();
+    renderList();
+  });
+});
+
+renderMarkers();
+renderList();
+</script>
+
+</body>
+</html>
