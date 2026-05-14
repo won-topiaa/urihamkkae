@@ -281,6 +281,125 @@
   .fade-up { animation: fadeUp .6s ease forwards; }
   .fade-up-2 { animation: fadeUp .6s ease .15s forwards; opacity: 0; }
   .fade-up-3 { animation: fadeUp .6s ease .3s forwards; opacity: 0; }
+
+  /* Onboarding Modal */
+  .onb-overlay {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(28, 25, 23, 0.55); backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+    animation: fadeIn .25s ease;
+    opacity: 1; pointer-events: auto;
+    transition: opacity .25s ease;
+  }
+  .onb-overlay.hidden { opacity: 0; pointer-events: none; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .onb-modal {
+    background: white; border-radius: 28px;
+    max-width: 720px; width: 100%;
+    box-shadow: 0 30px 80px rgba(28, 25, 23, 0.25);
+    position: relative; overflow: hidden;
+    animation: modalSlide .4s cubic-bezier(.2, .8, .3, 1.2);
+    max-height: 92vh; overflow-y: auto;
+  }
+  @keyframes modalSlide {
+    from { opacity: 0; transform: translateY(30px) scale(.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .onb-close {
+    position: absolute; top: 18px; right: 18px;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--cream); border: none; cursor: pointer;
+    font-size: 22px; color: var(--muted); line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .15s; z-index: 2;
+  }
+  .onb-close:hover { background: var(--orange-mist); color: var(--orange-deep); }
+  .onb-header {
+    background: linear-gradient(135deg, var(--orange-mist) 0%, #FFE4C4 100%);
+    padding: 36px 32px 28px; text-align: center; position: relative;
+  }
+  .onb-emoji { font-size: 44px; margin-bottom: 8px; line-height: 1; }
+  .onb-header h2 {
+    font-size: 22px; color: var(--ink); font-weight: 800;
+    margin-bottom: 6px; letter-spacing: -0.02em;
+  }
+  .onb-header p { font-size: 14px; color: var(--body); }
+  .onb-body { padding: 28px 32px 8px; }
+  @media (max-width: 600px) { .onb-body { padding: 24px 20px 4px; } }
+  .onb-steps {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 600px) { .onb-steps { grid-template-columns: 1fr; gap: 10px; } }
+  .onb-step {
+    background: var(--cream-deep); border: 1px solid var(--line);
+    border-radius: 16px; padding: 18px 16px; text-align: center;
+    position: relative;
+  }
+  .onb-step-num {
+    position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--orange); color: white;
+    font-size: 12px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .onb-step-icon { font-size: 28px; margin: 8px 0 8px; }
+  .onb-step h3 { font-size: 14px; color: var(--ink); font-weight: 800; margin-bottom: 4px; }
+  .onb-step p { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .onb-highlights {
+    background: linear-gradient(135deg, var(--orange-mist) 0%, var(--cream) 100%);
+    border-radius: 14px; padding: 16px; margin-bottom: 24px;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  }
+  @media (max-width: 600px) { .onb-highlights { grid-template-columns: 1fr; } }
+  .onb-hl-item { text-align: center; }
+  .onb-hl-num { font-size: 18px; font-weight: 800; color: var(--orange-deep); line-height: 1; }
+  .onb-hl-label { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .onb-quick-tour {
+    border-top: 1px solid var(--line); padding-top: 18px; margin-bottom: 18px;
+  }
+  .onb-quick-title { font-size: 12px; color: var(--muted); font-weight: 700; margin-bottom: 10px; letter-spacing: 0.05em; text-transform: uppercase; text-align: center; }
+  .onb-quick-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  @media (max-width: 600px) { .onb-quick-grid { grid-template-columns: 1fr; } }
+  .onb-quick-link {
+    background: white; border: 1px solid var(--line);
+    border-radius: 10px; padding: 10px 12px; display: flex;
+    align-items: center; gap: 8px; transition: all .15s;
+    color: var(--body); font-size: 13px;
+  }
+  .onb-quick-link:hover { border-color: var(--orange); color: var(--orange-deep); transform: translateX(2px); }
+  .onb-quick-emoji { font-size: 18px; }
+  .onb-quick-name { font-weight: 700; }
+  .onb-actions {
+    padding: 0 32px 32px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
+  }
+  @media (max-width: 600px) { .onb-actions { padding: 0 20px 24px; flex-direction: column; } }
+  .onb-btn-primary {
+    flex: 1; background: var(--orange); color: white;
+    padding: 14px 24px; border-radius: 999px; border: none;
+    font-size: 14px; font-weight: 800; cursor: pointer;
+    font-family: inherit; box-shadow: 0 6px 16px rgba(249, 115, 22, 0.25);
+    transition: all .2s;
+  }
+  .onb-btn-primary:hover { background: var(--orange-deep); transform: translateY(-1px); }
+  .onb-btn-secondary {
+    background: var(--cream); color: var(--body);
+    padding: 14px 24px; border-radius: 999px; border: 1px solid var(--line);
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    font-family: inherit; transition: all .15s;
+  }
+  .onb-btn-secondary:hover { background: var(--cream-deep); border-color: var(--orange-soft); }
+
+  /* Help button in nav */
+  .nav-help {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--cream); border: 1px solid var(--line);
+    color: var(--muted); cursor: pointer; font-weight: 800;
+    font-size: 14px; display: inline-flex !important; align-items: center; justify-content: center;
+    transition: all .15s; font-family: inherit; padding: 0;
+  }
+  .nav-help:hover { background: var(--orange-mist); color: var(--orange-deep); border-color: var(--orange-soft); }
 </style>
 </head>
 <body>
@@ -316,6 +435,7 @@
       <a href="calculator.html">절감 계산기</a>
       <a href="contractors.html">시공업체</a>
       <a href="rankings.html">업체 랭킹</a>
+      <button class="nav-help" onclick="openOnboarding()" aria-label="이용 가이드 다시 보기" title="이용 가이드">?</button>
       <a href="#cta" class="btn-primary">신청</a>
     </div>
   </div>
@@ -669,6 +789,126 @@
     </div>
   </div>
 </footer>
+
+<!-- Onboarding Modal -->
+<div id="onb-overlay" class="onb-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="onb-title">
+  <div class="onb-modal">
+    <button class="onb-close" onclick="closeOnboarding()" aria-label="닫기">×</button>
+
+    <div class="onb-header">
+      <div class="onb-emoji">👋</div>
+      <h2 id="onb-title">우리 함께해요!에 오신 것을 환영합니다</h2>
+      <p>이웃 단지와 함께 보수공사 비용을 줄이는 방법을 1분 안에 안내드릴게요</p>
+    </div>
+
+    <div class="onb-body">
+      <div class="onb-steps">
+        <div class="onb-step">
+          <div class="onb-step-num">1</div>
+          <div class="onb-step-icon">📝</div>
+          <h3>우리 단지 등록</h3>
+          <p>세대수, 희망 공사, 충당금 잔액을 입력합니다</p>
+        </div>
+        <div class="onb-step">
+          <div class="onb-step-num">2</div>
+          <div class="onb-step-icon">🗺️</div>
+          <h3>인근 단지 매칭</h3>
+          <p>반경 5km 내 같은 공사 예정 단지와 자동 연결</p>
+        </div>
+        <div class="onb-step">
+          <div class="onb-step-num">3</div>
+          <div class="onb-step-icon">💰</div>
+          <h3>공동 발주 + 절감</h3>
+          <p>검증 시공업체에 묶음 입찰, 최대 30% 비용 절감</p>
+        </div>
+      </div>
+
+      <div class="onb-highlights">
+        <div class="onb-hl-item">
+          <div class="onb-hl-num">20~30%</div>
+          <div class="onb-hl-label">단지당 비용 절감</div>
+        </div>
+        <div class="onb-hl-item">
+          <div class="onb-hl-num">142곳</div>
+          <div class="onb-hl-label">참여 단지 (부천 기준)</div>
+        </div>
+        <div class="onb-hl-item">
+          <div class="onb-hl-num">100%</div>
+          <div class="onb-hl-label">단지별 회계 분리</div>
+        </div>
+      </div>
+
+      <div class="onb-quick-tour">
+        <div class="onb-quick-title">주요 페이지 빠른 이동</div>
+        <div class="onb-quick-grid">
+          <a href="match.html" class="onb-quick-link">
+            <span class="onb-quick-emoji">🗺️</span>
+            <span><span class="onb-quick-name">단지 매칭 지도</span><br><span style="font-size:11px;color:var(--muted)">부천 28개 단지 실시간 매칭</span></span>
+          </a>
+          <a href="calculator.html" class="onb-quick-link">
+            <span class="onb-quick-emoji">🧮</span>
+            <span><span class="onb-quick-name">절감 계산기</span><br><span style="font-size:11px;color:var(--muted)">우리 단지 예상 절감액 확인</span></span>
+          </a>
+          <a href="contractors.html" class="onb-quick-link">
+            <span class="onb-quick-emoji">🏗️</span>
+            <span><span class="onb-quick-name">시공업체 등록</span><br><span style="font-size:11px;color:var(--muted)">검증된 업체 풀에 합류</span></span>
+          </a>
+          <a href="rankings.html" class="onb-quick-link">
+            <span class="onb-quick-emoji">🏆</span>
+            <span><span class="onb-quick-name">업체 랭킹</span><br><span style="font-size:11px;color:var(--muted)">책임시공 점수로 줄세우기</span></span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="onb-actions">
+      <button class="onb-btn-primary" onclick="closeOnboarding()">둘러보기 시작 →</button>
+      <button class="onb-btn-secondary" onclick="closeOnboarding(true)">다시 보지 않기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    const STORAGE_KEY = 'urihamkkae_onb_dismissed_v1';
+    const overlay = document.getElementById('onb-overlay');
+
+    function showOnboarding() {
+      overlay.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    window.closeOnboarding = function(permanent) {
+      overlay.classList.add('hidden');
+      document.body.style.overflow = '';
+      if (permanent) {
+        try { localStorage.setItem(STORAGE_KEY, '1'); } catch(e) {}
+      }
+    };
+
+    window.openOnboarding = function() {
+      showOnboarding();
+    };
+
+    // Show on first visit
+    let dismissed = false;
+    try { dismissed = localStorage.getItem(STORAGE_KEY) === '1'; } catch(e) {}
+    if (!dismissed) {
+      // Slight delay for smooth page load
+      setTimeout(showOnboarding, 400);
+    }
+
+    // Close on overlay click (not modal click)
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) closeOnboarding();
+    });
+
+    // Close on ESC
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && !overlay.classList.contains('hidden')) closeOnboarding();
+    });
+  })();
+</script>
 
 </body>
 </html>
