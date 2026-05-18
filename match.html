@@ -46,6 +46,8 @@
     max-width: 1400px; margin: 0 auto; padding: 0 24px 16px;
     display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
   }
+  @media (max-width: 900px) { .filter-bar { padding: 0 16px 14px; } }
+  @media (max-width: 480px) { .filter-bar { padding: 0 14px 12px; gap: 8px; } }
   .filter-chip {
     background: white; border: 1px solid var(--line); padding: 8px 14px;
     border-radius: 999px; font-size: 13px; font-weight: 600;
@@ -58,7 +60,8 @@
 
   /* Main grid */
   .main { max-width: 1400px; margin: 0 auto; padding: 0 24px 40px; display: grid; grid-template-columns: 380px 1fr; gap: 20px; height: calc(100vh - 220px); min-height: 600px; }
-  @media (max-width: 900px) { .main { grid-template-columns: 1fr; height: auto; } }
+  @media (max-width: 900px) { .main { grid-template-columns: 1fr; height: auto; padding: 0 16px 32px; } }
+  @media (max-width: 480px) { .main { padding: 0 14px 28px; gap: 14px; } }
 
   /* Sidebar */
   .sidebar {
